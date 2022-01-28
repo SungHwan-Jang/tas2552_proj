@@ -40,9 +40,10 @@
 /* USER CODE END PTD */
 
 #define newRingBuffer(init_callback, insert_callback, find_callback) \
-                        {{0,}, 0, 0, MAX_RINGBUFFER_SIZE, pdFAIL, (e_packet_err_state_t)PACKET_INIT, (init_callback), (insert_callback), (find_callback)}
+                        {{0,}, 0, 0, MAX_RINGBUFFER_SIZE, pdFAIL, (init_callback), (insert_callback)}
 
-#define newContext(buf) {buf}
+#define newContext(buf, post_msg, receive_msg) \
+                        {(buf), (e_packet_state_t)PORT_CMD_INIT, (post_msg), (receive_msg)}
 
 /* USER CODE END PM */
 
@@ -61,9 +62,9 @@ void init_buffer(struct port_ring_buffer *this);
 
 void insert_buffer_item(struct port_ring_buffer *this, uint8_t data);
 
-s_port_data_t parse_buffer(struct port_ring_buffer *this);
+s_port_data_t parse_buffer(struct port_api *this);
 
-uint8_t *make_packet(s_port_data_t portData);
+void post_msg(s_port_data_t portData);
 
 // =================================================== //
 
@@ -110,6 +111,19 @@ static void insert_fix_buf_pos(struct port_ring_buffer *this) {
 #endif
 }
 
+static uint8_t *make_packet(s_port_data_t portData){
+    static uint8_t packet[4];
+
+    memset(packet, 0x00, sizeof(packet));
+
+    packet[0] = '<';
+    packet[1] = portData.cmd;
+    packet[2] = portData.data;
+    packet[3] = '>';
+
+    return packet;
+}
+
 /* USER CODE END FunctionPrototypes */
 
 void initialize_port_service(void) {
@@ -117,7 +131,7 @@ void initialize_port_service(void) {
                                                                            parse_buffer);
     memcpy(&portRingBuffer, &initBuffer, sizeof(s_port_ring_buffer_t));
 
-    s_port_api_t initCtx = newContext(&portRingBuffer);
+    s_port_api_t initCtx = newContext(&portRingBuffer, post_msg, parse_buffer);
     memcpy(&ctx, &initCtx, sizeof(s_port_api_t));
 
     HAL_UART_Receive_IT(&huart1, &rxBuf, 1);
@@ -146,28 +160,36 @@ void insert_buffer_item(struct port_ring_buffer *this, uint8_t data) {
     insert_fix_buf_pos(this);
 }
 
-s_port_data_t parse_buffer(struct port_ring_buffer *this) {
+void post_msg(s_port_data_t portData){
+    uint8_t *packet = make_packet(portData);
+
+    if (portData.cmd != PORT_CMD_INIT) {
+        HAL_UART_Transmit_DMA(&huart1, packet, 4);
+    }
+}
+
+s_port_data_t parse_buffer(struct port_api *this) {
     s_port_data_t pData = {PORT_CMD_INIT, 0x00};
     int32_t stxIndex = -1;
     int32_t etxIndex = -1;
     uint32_t i = 0;
     uint32_t packetCnt = 0;
 
-    if (get_buf_data_size(this) == 0) {
+    if (get_buf_data_size(this->commBuffer) == 0) {
         this->state = PACKET_EMPTY;
         return pData;
     }
 
-    for (i = this->head; i < (get_buf_data_size(this) + this->head); i++) {
-        if (this->buffer[i % this->maxSize] == '<') {
-            stxIndex = i % this->maxSize;
+    for (i = this->commBuffer->head; i < (get_buf_data_size(this->commBuffer) + this->commBuffer->head); i++) {
+        if (this->commBuffer->buffer[i % this->commBuffer->maxSize] == '<') {
+            stxIndex = i % this->commBuffer->maxSize;
             break;
         }
     }
 
-    for (i = stxIndex; i < (get_buf_data_size(this) + this->head); i++) {
-        if (this->buffer[i % this->maxSize] == '>') {
-            etxIndex = i % this->maxSize;
+    for (i = stxIndex; i < (get_buf_data_size(this->commBuffer) + this->commBuffer->head); i++) {
+        if (this->commBuffer->buffer[i % this->commBuffer->maxSize] == '>') {
+            etxIndex = i % this->commBuffer->maxSize;
             break;
         }
     }
@@ -186,22 +208,22 @@ s_port_data_t parse_buffer(struct port_ring_buffer *this) {
         }
 
         if (packetCnt != 2) {
-            this->head = (etxIndex + 1) % this->maxSize;
-            this->full = pdFALSE;
+            this->commBuffer->head = (etxIndex + 1) % this->commBuffer->maxSize;
+            this->commBuffer->full = pdFALSE;
             this->state = PACKET_LENGTH_ERROR;
         }
         else {
-            pData.cmd = (e_comm_cmd_list_t) this->buffer[stxIndex + 1];
-            pData.data = this->buffer[etxIndex - 1];
+            pData.cmd = (e_comm_cmd_list_t) this->commBuffer->buffer[stxIndex + 1];
+            pData.data = this->commBuffer->buffer[etxIndex - 1];
 
-            this->head = (etxIndex + 1) % this->maxSize;
-            this->full = pdFALSE;
+            this->commBuffer->head = (etxIndex + 1) % this->commBuffer->maxSize;
+            this->commBuffer->full = pdFALSE;
             this->state = PACKET_OK;
         }
     }
     else {
         this->state = PACKET_FORMAT_ERROR;
-        this->init(this);
+        this->commBuffer->init(this->commBuffer);
     }
 
 #ifdef PORT_SERVICE_DEBUG

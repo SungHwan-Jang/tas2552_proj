@@ -26,7 +26,7 @@ typedef enum {
     PACKET_EMPTY = 0x02,
     PACKET_FORMAT_ERROR = 0x03,
     PACKET_INIT = 0xFF,
-} e_packet_err_state_t;
+} e_packet_state_t;
 
 typedef struct portData {
     e_comm_cmd_list_t cmd;
@@ -39,19 +39,21 @@ typedef struct port_ring_buffer {
     volatile uint32_t tail;
     const uint32_t maxSize;
     volatile uint8_t full;
-    e_packet_err_state_t state;
+
 
     void (*init)(struct port_ring_buffer *this);
 
     void (*insert_item)(struct port_ring_buffer *this, uint8_t data);
 
-    s_port_data_t (*parsing_buffer)(struct port_ring_buffer *this);
-
 } s_port_ring_buffer_t;
 
-typedef struct server_context {
+typedef struct port_api {
     s_port_ring_buffer_t *commBuffer;
-    uint8_t* (*make_packet) (s_port_data_t portData);
+    e_packet_state_t state;
+
+    void (*post_msg)(s_port_data_t portData);
+
+    s_port_data_t (*receive_msg)(struct port_api *this);
 
     // add state, callback, make packet
 } s_port_api_t;

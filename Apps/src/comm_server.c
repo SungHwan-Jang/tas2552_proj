@@ -23,6 +23,8 @@ void init_comm_server_app(void) {
                 NULL,
                 0,
                 rs232ServerHandle);
+
+
 }
 
 void rs232ServerTask(void *argument) {
@@ -32,21 +34,28 @@ void rs232ServerTask(void *argument) {
 
     /* Infinite loop */
     for ever {
+        s_port_data_t data = portApi->receive_msg(portApi);
 
-        uint8_t str[4] = {0,};
-        s_port_data_t data = portApi->commBuffer->parsing_buffer(portApi->commBuffer);
-
-        str[0] = '<';
-        str[1] = data.cmd;
-        str[2] = data.data;
-        str[3] = '>';
-
-//        sprintf((char*)str, "0x%x\n\r", data.data);
-        if (data.cmd != PORT_CMD_INIT) {
-            HAL_UART_Transmit_DMA(&huart1, str, sizeof(str));
+        switch (portApi->state) {
+            case PACKET_EMPTY:{
+                portYIELD();
+                break;
+            }
+            case PACKET_FORMAT_ERROR:{
+                portYIELD();
+                break;
+            }
+            case PACKET_LENGTH_ERROR:{
+                portYIELD();
+                break;
+            }
+            case PACKET_OK:{
+                portApi->post_msg(data);
+                break;
+            }
+            default:
+                break;
         }
-
-        osDelay(200);
     }
     /* USER CODE END rs232ServerTask */
 }
