@@ -67,6 +67,11 @@ include_directories(Drivers/STM32F0xx_HAL_Driver/Inc/Legacy)
 include_directories(Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS)
 include_directories(Middlewares/Third_Party/FreeRTOS/Source/include)
 include_directories(Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM0)
+include_directories(Middlewares/PortService/inc)
+include_directories(Apps/inc)
+include_directories(Apps/src)
+include_directories(Drivers/TAS2552Driver/inc)
+include_directories(Drivers/TAS2552Driver/src)
 
 add_executable(tas2552_proj
         Core/Inc/FreeRTOSConfig.h
@@ -915,4 +920,16 @@ add_executable(tas2552_proj
         Middlewares/Third_Party/FreeRTOS/Source/queue.c
         Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
         Middlewares/Third_Party/FreeRTOS/Source/tasks.c
-        Middlewares/Third_Party/FreeRTOS/Source/timers.c)
+        Middlewares/Third_Party/FreeRTOS/Source/timers.c
+        Middlewares/PortService/src/port_service.c
+        Middlewares/PortService/inc/port_service.h
+        Core/Inc/dma.h
+        Core/Src/dma.c
+        Apps/src/comm_server.c
+        Apps/src/comm_client.c
+        Apps/inc/comm_client.h
+        Apps/inc/comm_server.h
+        Drivers/TAS2552Driver/inc/tas2552.h
+        Drivers/TAS2552Driver/src/tas2552.c
+
+        )
