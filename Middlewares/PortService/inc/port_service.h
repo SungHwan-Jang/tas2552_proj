@@ -14,10 +14,12 @@ typedef uint8_t port_service_state_t;
 
 typedef enum {
     PORT_CMD_INIT = 0x00,
-    PORT_CMD_SYSTEM_OFF = 0xFF,
-    PORT_CMD_SYSTEM_ON = 0xFE,
+    PORT_CMD_SYSTEM_OFF = 0x30,
+    PORT_CMD_SYSTEM_ON = 0x31,
     PORT_CMD_GAIN_SETTING = 0x12,
-    PORT_CMD_ACK = 0xFD,
+    PORT_CMD_ACK = 0x32,                    // mcu control ok
+    PORT_CMD_NACK = 0x33,                   // mcu control err
+    PORT_CMD_ERR = 0x3f,                    // wrong cmd received.
 } e_comm_cmd_list_t;
 
 typedef enum {
@@ -28,10 +30,16 @@ typedef enum {
     PACKET_INIT = 0xFF,
 } e_packet_state_t;
 
+typedef enum {
+    PORT_NOTIFICATION_MODE,
+    PORT_QUEUE_SEND_MODE,
+    PORT_MODE_END,
+} e_noti_mode_t;
+
 typedef struct portData {
     e_comm_cmd_list_t cmd;
     uint8_t data;
-} s_port_data_t;
+} port_data_t;
 
 typedef struct port_ring_buffer {
     uint8_t buffer[MAX_RINGBUFFER_SIZE];
@@ -50,16 +58,16 @@ typedef struct port_ring_buffer {
 typedef struct port_api {
     s_port_ring_buffer_t *commBuffer;
     e_packet_state_t state;
+    e_noti_mode_t mode;
 
-    void (*post_msg)(s_port_data_t portData);
+    void (*post_msg)(port_data_t portData);
 
-    s_port_data_t (*receive_msg)(struct port_api *this);
+    port_data_t (*receive_msg)(struct port_api *this);
 
-    // add state, callback, make packet
-} s_port_api_t;
+} port_api_t;
 
-void initialize_port_service(void);
+void initialize_port_service(e_noti_mode_t mode);
 
-s_port_api_t *get_port_service_api(void);
+port_api_t *get_port_service_api(void);
 
 #endif //TAS2552_PROJ_PORT_SERVICE_H

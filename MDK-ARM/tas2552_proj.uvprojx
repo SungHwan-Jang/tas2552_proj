@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F051x8</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc; ../Drivers/STM32F0xx_HAL_Driver/Inc; ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy; ../Middlewares/Third_Party/FreeRTOS/Source/include; ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS; ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM0; ../Drivers/CMSIS/Device/ST/STM32F0xx/Include; ../Drivers/CMSIS/Include; ../Middlewares/PortService\inc; ../Middlewares/AmplifierManager/inc; ../Drivers/TAS2552Driver/inc; ../Apps/inc</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F0xx_HAL_Driver/Inc;../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM0;../Drivers/CMSIS/Device/ST/STM32F0xx/Include;../Drivers/CMSIS/Include;../Middlewares/PortService\inc;../Middlewares/AmplifierManager/inc;../Drivers/TAS2552Driver/inc;../Apps/inc;..\Middlewares\RtosCommObjects\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -669,22 +669,32 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Apps/CommServer</GroupName>
+          <GroupName>Middlewares/Rtos_Comm_Objects</GroupName>
           <Files>
             <File>
-              <FileName>comm_server.c</FileName>
+              <FileName>rtos_comm_objects.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Apps\src\comm_server.c</FilePath>
+              <FilePath>..\Middlewares\RtosCommObjects\src\rtos_comm_objects.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>Apps/CommClient</GroupName>
+          <GroupName>Application/Apps</GroupName>
           <Files>
+            <File>
+              <FileName>app_service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Apps\src\app_service.c</FilePath>
+            </File>
             <File>
               <FileName>comm_client.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Apps\src\comm_client.c</FilePath>
+            </File>
+            <File>
+              <FileName>comm_server.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Apps\src\comm_server.c</FilePath>
             </File>
           </Files>
         </Group>

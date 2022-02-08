@@ -32,10 +32,12 @@
 #include "port_service.h"
 #include "usart.h"
 #include "string.h"
+#include "rtos_comm_objects.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+#define PACKET_LENGTH                           5
 
 /* USER CODE END PTD */
 
@@ -43,7 +45,7 @@
                         {{0,}, 0, 0, MAX_RINGBUFFER_SIZE, pdFAIL, (init_callback), (insert_callback)}
 
 #define newContext(buf, post_msg, receive_msg) \
-                        {(buf), (e_packet_state_t)PORT_CMD_INIT, (post_msg), (receive_msg)}
+                        {(buf), (e_packet_state_t)PORT_CMD_INIT, (e_noti_mode_t) PORT_MODE_END,(post_msg), (receive_msg)}
 
 /* USER CODE END PM */
 
@@ -51,7 +53,7 @@
 /* USER CODE BEGIN Variables */
 
 static s_port_ring_buffer_t portRingBuffer;
-static s_port_api_t ctx;
+static port_api_t ctx;
 static uint8_t rxBuf;
 
 /* USER CODE END Variables */
@@ -62,9 +64,9 @@ void init_buffer(struct port_ring_buffer *this);
 
 void insert_buffer_item(struct port_ring_buffer *this, uint8_t data);
 
-s_port_data_t parse_buffer(struct port_api *this);
+port_data_t parse_buffer(struct port_api *this);
 
-void post_msg(s_port_data_t portData);
+void post_msg(port_data_t portData);
 
 // =================================================== //
 
@@ -111,8 +113,8 @@ static void insert_fix_buf_pos(struct port_ring_buffer *this) {
 #endif
 }
 
-static uint8_t *make_packet(s_port_data_t portData){
-    static uint8_t packet[4];
+static uint8_t *make_packet(port_data_t portData) {
+    static uint8_t packet[PACKET_LENGTH];
 
     memset(packet, 0x00, sizeof(packet));
 
@@ -120,24 +122,26 @@ static uint8_t *make_packet(s_port_data_t portData){
     packet[1] = portData.cmd;
     packet[2] = portData.data;
     packet[3] = '>';
+    packet[4] = '\0';
 
     return packet;
 }
 
 /* USER CODE END FunctionPrototypes */
 
-void initialize_port_service(void) {
+void initialize_port_service(e_noti_mode_t mode) {
     s_port_ring_buffer_t initBuffer = (s_port_ring_buffer_t) newRingBuffer(init_buffer, insert_buffer_item,
                                                                            parse_buffer);
     memcpy(&portRingBuffer, &initBuffer, sizeof(s_port_ring_buffer_t));
 
-    s_port_api_t initCtx = newContext(&portRingBuffer, post_msg, parse_buffer);
-    memcpy(&ctx, &initCtx, sizeof(s_port_api_t));
+    port_api_t initCtx = newContext(&portRingBuffer, post_msg, parse_buffer);
+    initCtx.mode = mode;
 
+    memcpy(&ctx, &initCtx, sizeof(port_api_t));
     HAL_UART_Receive_IT(&huart1, &rxBuf, 1);
 }
 
-s_port_api_t *get_port_service_api(void) {
+port_api_t *get_port_service_api(void) {
     return &ctx;
 }
 
@@ -160,16 +164,16 @@ void insert_buffer_item(struct port_ring_buffer *this, uint8_t data) {
     insert_fix_buf_pos(this);
 }
 
-void post_msg(s_port_data_t portData){
+void post_msg(port_data_t portData) {
     uint8_t *packet = make_packet(portData);
 
     if (portData.cmd != PORT_CMD_INIT) {
-        HAL_UART_Transmit_DMA(&huart1, packet, 4);
+        HAL_UART_Transmit_DMA(&huart1, packet, PACKET_LENGTH);
     }
 }
 
-s_port_data_t parse_buffer(struct port_api *this) {
-    s_port_data_t pData = {PORT_CMD_INIT, 0x00};
+port_data_t parse_buffer(struct port_api *this) {
+    port_data_t pData = {PORT_CMD_INIT, 0x00};
     int32_t stxIndex = -1;
     int32_t etxIndex = -1;
     uint32_t i = 0;
@@ -238,16 +242,39 @@ s_port_data_t parse_buffer(struct port_api *this) {
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-    if(huart->Instance == USART1){
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+    if (huart->Instance == USART1) {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8); //blue
     }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
+    static comm_obj_t commObj;
+
+    commObj.type = DELIVERY_FROM_HOST;
+
     if (huart->Instance == USART1) {
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9); // green
         portRingBuffer.insert_item(&portRingBuffer, rxBuf);
+
+        switch (ctx.mode) {
+            case PORT_NOTIFICATION_MODE: {
+                if (get_buf_data_size(&portRingBuffer) >= 3) {
+                    ui_notify_send_event(TASK_SERVER, 1);
+                }
+                break;
+            }
+            case PORT_QUEUE_SEND_MODE: {
+                if (get_buf_data_size(&portRingBuffer) >= 3) {
+                    ui_queue_send_event(TASK_SERVER, &commObj, 1);
+                }
+                break;
+            }
+            default:
+                // TODO: add err state;
+                break;
+        }
+
         HAL_UART_Receive_IT(huart, &rxBuf, 1);
     }
 }

@@ -72,6 +72,8 @@ include_directories(Apps/inc)
 include_directories(Apps/src)
 include_directories(Drivers/TAS2552Driver/inc)
 include_directories(Drivers/TAS2552Driver/src)
+include_directories(Middlewares/RtosCommObjects/inc)
+include_directories(Middlewares/RtosCommObjects/src)
 
 add_executable(tas2552_proj
         Core/Inc/FreeRTOSConfig.h
@@ -932,4 +934,6 @@ add_executable(tas2552_proj
         Drivers/TAS2552Driver/inc/tas2552.h
         Drivers/TAS2552Driver/src/tas2552.c
 
-        )
+        Middlewares/RtosCommObjects/inc/rtos_comm_objects.h
+        Middlewares/RtosCommObjects/src/rtos_comm_objects.c
+        Apps/src/app_service.c Apps/inc/app_service.h)
