@@ -33,7 +33,7 @@ static const struct tas2552_reg_def tas2552_default_reg = {
 };
 
 // initialize I2S function map.
-static const s_tas2552_reg_t tas2552_i2s_init_seq[] = {
+static const tas2552_reg_t tas2552_i2s_init_seq[] = {
         {TAS2552_CFG_1,          0x12},                 //w 80 01 12
         {TAS2552_PLL_CTRL_1,     0x20},                 //w 80 08 20
         {TAS2552_CFG_2,          0xea},                 //w 80 02 EA
@@ -50,7 +50,7 @@ static const s_tas2552_reg_t tas2552_i2s_init_seq[] = {
 };
 
 // initialize analog function map.
-static const s_tas2552_reg_t tas2552_analog_init_seq[] = {
+static const tas2552_reg_t tas2552_analog_init_seq[] = {
         {TAS2552_CFG_1,          0x12},                 //w 80 01 12
         {TAS2552_PLL_CTRL_1,     0x20},                 //w 80 08 20
         {TAS2552_CFG_2,          0xea},                 //w 80 02 EA
@@ -81,15 +81,15 @@ tas2552_reg_map_t get_tas2552_default_reg_map(void) {
     return tas2552_default_reg;
 }
 
-const s_tas2552_reg_t *get_tas2552_i2s_mode_seq(void) {
+const tas2552_reg_t *get_tas2552_i2s_mode_seq(void) {
     return tas2552_i2s_init_seq;
 }
 
-const s_tas2552_reg_t *get_tas2552_analog_mode_seq(void) {
+const tas2552_reg_t *get_tas2552_analog_mode_seq(void) {
     return tas2552_analog_init_seq;
 }
 
-e_tas2552_state tas2552_post_data(s_tas2552_reg_t regMap) {
+e_tas2552_state tas2552_post_data(tas2552_reg_t regMap) {
     // TODO: tas2552 register update
     e_tas2552_state state = TAS2552_FAIL;
     uint8_t msg[] = {regMap.reg_addr, regMap.reg_data};

@@ -80,14 +80,10 @@ static void server_receiver(comm_obj_t *commObj) {
     senderObj.type = DELIVERY_FROM_CLIENT;
 
     switch (serverCtx->packet.cmd) {
-        case PORT_CMD_SYSTEM_ON:{
-            ui_queue_send_event(TASK_GATE_KEEPER, &senderObj, 0);
-            break;
-        }
-        case PORT_CMD_SYSTEM_OFF:{
-            ui_queue_send_event(TASK_GATE_KEEPER, &senderObj, 0);
-            break;
-        }
+        case PORT_CMD_SYSTEM_ON:
+        case PORT_CMD_SYSTEM_OFF:
+        case PORT_CMD_FIND_SYS:
+        case PORT_CMD_GAIN_INFO:
         case PORT_CMD_GAIN_SETTING:{
             ui_queue_send_event(TASK_GATE_KEEPER, &senderObj, 0);
             break;
@@ -102,17 +98,26 @@ static void gate_receiver(comm_obj_t *commObj){
     app_service_context_t * appServiceCtx = (app_service_context_t*)commObj->data;
     context.packet.data = appServiceCtx->cmdList;
 
-    switch (appServiceCtx->state) {
-        case APP_DONE:{
-            context.packet.cmd = PORT_CMD_ACK;
-            break;
+    if(appServiceCtx->state == APP_DONE){
+#if 0
+        switch (appServiceCtx->cmdList) {
+            case PORT_CMD_GAIN_INFO:
+                context.packet.cmd = appServiceCtx->cmdList;
+                context.packet.data = appServiceCtx->data;
+                break;
+            default:
+                context.packet.cmd = PORT_CMD_ACK;
+                break;
         }
-        case APP_ERR:{
-            // TODO: add err exception handler ?
-            context.packet.cmd = PORT_CMD_NACK;
-            break;
-        }
+#else
+        context.packet.cmd = PORT_CMD_ACK;
+#endif
     }
+    else{
+        // TODO: add err exception handler ?
+        context.packet.cmd = PORT_CMD_NACK;
+    }
+
 
     senderObj.type = DELIVERY_FROM_CLIENT;
     senderObj.data = &context;

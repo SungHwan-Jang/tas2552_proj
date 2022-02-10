@@ -143,41 +143,41 @@ typedef enum tas2552_state {
 typedef struct tas2552_reg {
     const uint8_t reg_addr;
     uint8_t reg_data;
-} s_tas2552_reg_t;
+} tas2552_reg_t;
 
 typedef struct tas2552_reg_def {
-    s_tas2552_reg_t tas2552_cfg_1;
-    s_tas2552_reg_t tas2552_cfg_3;
-    s_tas2552_reg_t tas2552_dout;
-    s_tas2552_reg_t tas2552_output_data;
-    s_tas2552_reg_t tas2552_pdm_cfg;
-    s_tas2552_reg_t tas2552_pga_gain;
-    s_tas2552_reg_t tas2552_boost_apt_ctrl;
-    s_tas2552_reg_t tas2552_reserved_0d;
-    s_tas2552_reg_t tas2552_limit_rate_hys;
-    s_tas2552_reg_t tas2552_cfg_2;
-    s_tas2552_reg_t tas2552_ser_ctrl_1;
-    s_tas2552_reg_t tas2552_ser_ctrl_2;
-    s_tas2552_reg_t tas2552_pll_ctrl_1;
-    s_tas2552_reg_t tas2552_pll_ctrl_2;
-    s_tas2552_reg_t tas2552_pll_ctrl_3;
-    s_tas2552_reg_t tas2552_btip;
-    s_tas2552_reg_t tas2552_bts_ctrl;
-    s_tas2552_reg_t tas2552_limit_release;
-    s_tas2552_reg_t tas2552_limit_int_count;
-    s_tas2552_reg_t tas2552_edge_rate_ctrl;
-    s_tas2552_reg_t tas2552_vbat_data;
+    tas2552_reg_t tas2552_cfg_1;
+    tas2552_reg_t tas2552_cfg_3;
+    tas2552_reg_t tas2552_dout;
+    tas2552_reg_t tas2552_output_data;
+    tas2552_reg_t tas2552_pdm_cfg;
+    tas2552_reg_t tas2552_pga_gain;
+    tas2552_reg_t tas2552_boost_apt_ctrl;
+    tas2552_reg_t tas2552_reserved_0d;
+    tas2552_reg_t tas2552_limit_rate_hys;
+    tas2552_reg_t tas2552_cfg_2;
+    tas2552_reg_t tas2552_ser_ctrl_1;
+    tas2552_reg_t tas2552_ser_ctrl_2;
+    tas2552_reg_t tas2552_pll_ctrl_1;
+    tas2552_reg_t tas2552_pll_ctrl_2;
+    tas2552_reg_t tas2552_pll_ctrl_3;
+    tas2552_reg_t tas2552_btip;
+    tas2552_reg_t tas2552_bts_ctrl;
+    tas2552_reg_t tas2552_limit_release;
+    tas2552_reg_t tas2552_limit_int_count;
+    tas2552_reg_t tas2552_edge_rate_ctrl;
+    tas2552_reg_t tas2552_vbat_data;
 } tas2552_reg_map_t;
 
 void init_tas2552_device(void);
 
 tas2552_reg_map_t get_tas2552_default_reg_map(void);
 
-const s_tas2552_reg_t *get_tas2552_i2s_mode_seq(void);
+const tas2552_reg_t *get_tas2552_i2s_mode_seq(void);
 
-const s_tas2552_reg_t *get_tas2552_analog_mode_seq(void);
+const tas2552_reg_t *get_tas2552_analog_mode_seq(void);
 
-e_tas2552_state tas2552_post_data(s_tas2552_reg_t regMap);
+e_tas2552_state tas2552_post_data(tas2552_reg_t regMap);
 
 tas2552_reg_map_t tas2552_get_all_reg_info(void);
 

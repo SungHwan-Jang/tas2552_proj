@@ -52,7 +52,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
-static s_port_ring_buffer_t portRingBuffer;
+static port_ring_buffer_t portRingBuffer;
 static port_api_t ctx;
 static uint8_t rxBuf;
 
@@ -130,9 +130,9 @@ static uint8_t *make_packet(port_data_t portData) {
 /* USER CODE END FunctionPrototypes */
 
 void initialize_port_service(e_noti_mode_t mode) {
-    s_port_ring_buffer_t initBuffer = (s_port_ring_buffer_t) newRingBuffer(init_buffer, insert_buffer_item,
-                                                                           parse_buffer);
-    memcpy(&portRingBuffer, &initBuffer, sizeof(s_port_ring_buffer_t));
+    port_ring_buffer_t initBuffer = (port_ring_buffer_t) newRingBuffer(init_buffer, insert_buffer_item,
+                                                                       parse_buffer);
+    memcpy(&portRingBuffer, &initBuffer, sizeof(port_ring_buffer_t));
 
     port_api_t initCtx = newContext(&portRingBuffer, post_msg, parse_buffer);
     initCtx.mode = mode;

@@ -54,7 +54,7 @@ static void app_service_process(comm_obj_t *commObj) {
 
         switch (clientCtx->packet.cmd) {
             case PORT_CMD_SYSTEM_ON: {
-                const s_tas2552_reg_t *seq = get_tas2552_i2s_mode_seq();
+                const tas2552_reg_t *seq = get_tas2552_i2s_mode_seq();
                 for (int i = 0; i < INIT_SETTING_SEQ_NUM; i++) {
                     state = tas2552_post_data(seq[i]);
 
@@ -64,7 +64,7 @@ static void app_service_process(comm_obj_t *commObj) {
                 break;
             }
             case PORT_CMD_SYSTEM_OFF: {
-                const s_tas2552_reg_t *seq = get_tas2552_analog_mode_seq();
+                const tas2552_reg_t *seq = get_tas2552_analog_mode_seq();
                 for (int i = 0; i < INIT_SETTING_SEQ_NUM; i++) {
                     state = tas2552_post_data(seq[i]);
 
@@ -75,12 +75,22 @@ static void app_service_process(comm_obj_t *commObj) {
             }
             case PORT_CMD_GAIN_SETTING: {
                 uint8_t gain = clientCtx->packet.data;
-                s_tas2552_reg_t gainCtrRegInfo = {TAS2552_PGA_GAIN, gain};
+                tas2552_reg_t gainCtrRegInfo = {TAS2552_PGA_GAIN, gain};
                 state = tas2552_post_data(gainCtrRegInfo);
 
                 if (state != TAS2552_OK)
                     context.state = APP_ERR;
-
+                break;
+            }
+#if 0
+            case PORT_CMD_GAIN_INFO:{
+                tas2552_reg_map_t regInfo = tas2552_get_all_reg_info();
+                uint8_t gainLevel = regInfo.tas2552_pga_gain.reg_data;
+                context.data = gainLevel;
+                break;
+            }
+#endif
+            case PORT_CMD_FIND_SYS:{
                 break;
             }
             default:

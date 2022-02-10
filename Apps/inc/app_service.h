@@ -15,6 +15,7 @@ typedef enum{
 
 typedef struct service_context{
     e_comm_cmd_list_t cmdList;
+    uint8_t data;
     e_app_service_state_t state;
 }app_service_context_t;
 

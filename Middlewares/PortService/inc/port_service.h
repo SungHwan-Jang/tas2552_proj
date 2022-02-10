@@ -14,11 +14,13 @@ typedef uint8_t port_service_state_t;
 
 typedef enum {
     PORT_CMD_INIT = 0x00,
+    PORT_CMD_GAIN_SETTING = 0x12,
+    PORT_CMD_GAIN_INFO = 0x13,
     PORT_CMD_SYSTEM_OFF = 0x30,
     PORT_CMD_SYSTEM_ON = 0x31,
-    PORT_CMD_GAIN_SETTING = 0x12,
-    PORT_CMD_ACK = 0x32,                    // mcu control ok
-    PORT_CMD_NACK = 0x33,                   // mcu control err
+    PORT_CMD_FIND_SYS = 0x32,               // auto host connect
+    PORT_CMD_ACK = 0x3d,                    // mcu control ok
+    PORT_CMD_NACK = 0x3e,                   // mcu control err
     PORT_CMD_ERR = 0x3f,                    // wrong cmd received.
 } e_comm_cmd_list_t;
 
@@ -53,10 +55,10 @@ typedef struct port_ring_buffer {
 
     void (*insert_item)(struct port_ring_buffer *this, uint8_t data);
 
-} s_port_ring_buffer_t;
+} port_ring_buffer_t;
 
 typedef struct port_api {
-    s_port_ring_buffer_t *commBuffer;
+    port_ring_buffer_t *commBuffer;
     e_packet_state_t state;
     e_noti_mode_t mode;
 
