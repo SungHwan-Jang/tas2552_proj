@@ -99,7 +99,6 @@ static void gate_receiver(comm_obj_t *commObj){
     context.packet.data = appServiceCtx->cmdList;
 
     if(appServiceCtx->state == APP_DONE){
-#if 0
         switch (appServiceCtx->cmdList) {
             case PORT_CMD_GAIN_INFO:
                 context.packet.cmd = appServiceCtx->cmdList;
@@ -109,9 +108,6 @@ static void gate_receiver(comm_obj_t *commObj){
                 context.packet.cmd = PORT_CMD_ACK;
                 break;
         }
-#else
-        context.packet.cmd = PORT_CMD_ACK;
-#endif
     }
     else{
         // TODO: add err exception handler ?
